@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int            @id @default(autoincrement())
+  fullName    String
+  email       String         @unique
+  password    String
+  phoneNumber String
+  role        String
+  profile     Profile?
+  company     Company[]
+  applicant   Applications[]
+  createdAt   DateTime       @default(now())
+}
+
+model Profile {
+  id                 Int    @id @default(autoincrement())
+  profileId          Int    @unique
+  bio                String
+  skills             String
+  resume             String
+  resumeOriginalName String
+  profilePhoto       String
+  user               User   @relation(fields: [profileId], references: [id])
+}
+
+model Job {
+  id           Int            @id @default(autoincrement())
+  salary       Int
+  location     String
+  jobType      String
+  position     Int
+  company      Company[]
+  createdById  Int
+  applications Applications[]
+  createdAt    DateTime       @default(now())
+}
+
+model Company {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  descriptions String?
+  website      String?
+  location     String?
+  logo         String
+  jobCompany   Int
+  companyId    Int
+  jobs         Job      @relation(fields: [jobCompany], references: [id])
+  JobPoster    User     @relation(fields: [companyId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model Applications {
+  id          Int                @id @default(autoincrement())
+  job         Job[]
+  applicantId Int
+  applicant   User               @relation(fields: [applicantId], references: [id])
+  status      ApplicantionStatus @default(pending)
+}
+
+enum ApplicantionStatus {
+  pending
+  accepted
+  rejected
+}
